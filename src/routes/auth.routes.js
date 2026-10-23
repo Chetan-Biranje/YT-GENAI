@@ -9,7 +9,13 @@ const authRouter =Router();
  * @description Register a new user
  * @access Public
  */
-authRouter.post("/register", registerUserController);
+authRouter.post("/register", authRoutes.registerUserController);
 
+/**
+ * @route POST /api/auth/login
+ * @description Login a user
+ * @access Public
+ */
+authRouter.post("/api/login", authRoutes.loginUserController);
 
-module.exports =app
+module.exports = authRouter;
