@@ -1,4 +1,4 @@
-const useremodel = require("../models/user.model");
+const userModel = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const blacklistTokenModel = require("../models/blacklist.model");
@@ -11,7 +11,7 @@ const blacklistTokenModel = require("../models/blacklist.model");
  */
 async function registerUserController(req, res) { 
 
-    const { username, email, password } = req.boby
+    const { username, email, password } = req.body
 
     if (!username || !email || !password) {
         return res.status(400).json({
@@ -20,13 +20,12 @@ async function registerUserController(req, res) {
         })
     }
     
-    const isUserAleadyExists = await userModel.findOne({
+    const isUserAlreadyExists = await userModel.findOne({
         $or: [{username},{email}]
     })
 
-    if(isUserAledyExits) {
+    if(isUserAlreadyExists) {
 
-        /* isUserAlreadyExists.username == username ? "Username" : "Email" */
         return res.status(400).json({
             message: "Account already exists with this email address or username"
         })
@@ -34,7 +33,7 @@ async function registerUserController(req, res) {
 
     const hash = await bcrypt.hash(password, 10)
 
-    const user = new userModel.create({
+    const user = await userModel.create({
         username,
         email,
         password: hash
@@ -67,6 +66,12 @@ async function registerUserController(req, res) {
 async function loginUserController(req, res) {
 
     const { email, password } = req.body
+
+    if (!email || !password) {
+        return res.status(400).json({
+            message: "Please provide email and password"
+        })
+    }
 
     const user = await userModel.findOne({ email })
 
@@ -111,18 +116,25 @@ async function loginUserController(req, res) {
  */
 
 async function logoutUserController(req, res) {
-    const token = req.cookies.token
+    const token = req.token || req.cookies?.token
 
     if (!token) {
+        return res.status(401).json({
+            message: "Token not provided"
+        })
+    }
+
+    const existingToken = await blacklistTokenModel.findOne({ token })
+
+    if (!existingToken) {
         await blacklistTokenModel.create({ token })
     }
 
     res.clearCookie("token")
 
-    res.status(200).json({
+    return res.status(200).json({
         message: "User logged out successfully"
     })
-
 }
 
 /**
@@ -131,10 +143,15 @@ async function logoutUserController(req, res) {
  * @access Private 
  */
 async function getMeController(req, res) {
-
     const user = await userModel.findById(req.user.id)
 
-    res.status(200).json({
+    if (!user) {
+        return res.status(404).json({
+            message: "User not found"
+        })
+    }
+
+    return res.status(200).json({
         message: "User details fetched successfully",
         user: {
             id: user._id,
@@ -142,9 +159,7 @@ async function getMeController(req, res) {
             email: user.email
         }
     })
-
-
-}    
+}
 
 module.exports = {
     registerUserController,
