@@ -1,7 +1,13 @@
 import React from "react";
-
+import "../auth.from.scss";
 
 const Login = () => {
+
+    const handleSubmit = (e) => {
+        e.preventDefault()
+    }
+
+
     return (
         <main>
             <div className="from-container">
@@ -18,9 +24,11 @@ const Login = () => {
                         <input type="password" id="password" name="password" placeholder="Enter your password" />
                     </div>
 
-                    <button className="button primary-button" ></button>
+                    <button className="button primary-button" >Login</button>
 
                 </form>
+
+                <p>Don't have an account? <link to={"/Register"}>Register</link> </p>
             </div>
         </main>
     )
