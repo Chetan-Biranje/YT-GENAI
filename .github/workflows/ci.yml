@@ -8,6 +8,16 @@ permissions:
 jobs:
   backend:
     runs-on: ubuntu-24.04
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1}).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: Backend
@@ -18,6 +28,9 @@ jobs:
           node-version: '24'
       - run: npm ci
       - run: node --check server.js && find src -name '*.js' -print0 | xargs -0 -n 1 node --check
+      - run: npm test
+        env:
+          MONGO_TEST_URI: mongodb://127.0.0.1:27017/yt_genai_ci
   frontend:
     runs-on: ubuntu-24.04
     defaults:
