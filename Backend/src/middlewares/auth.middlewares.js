@@ -4,7 +4,7 @@ const tokenBlacklistModel = require("../models/blacklist.model");
 async function authuser(req, res, next) {
   const token = req.cookies?.token;
 
-  if (!token) {
+  if (typeof token !== 'string' || !token || token.length > 4096) {
     return res.status(401).json({
       message: "Token not provided",
     });
@@ -19,7 +19,7 @@ async function authuser(req, res, next) {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
     req.user = decoded;
     req.token = token;
