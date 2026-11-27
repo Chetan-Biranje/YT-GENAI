@@ -11,11 +11,13 @@ const blacklistTokenModel = require("../models/blacklist.model");
  */
 async function registerUserController(req, res) { 
 
-    const { username, email, password } = req.body
+    const { username, email, password } = req.body || {}
 
-    if (!username || !email || !password) {
+    if (typeof username !== 'string' || username.trim().length < 2 || username.length > 100 ||
+        typeof email !== 'string' || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+        typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72) {
         return res.status(400).json({
-            message: "Please provide username, email, and password"
+            message: "Provide a valid username, email and password (minimum 8 characters)."
 
         })
     }
@@ -65,9 +67,10 @@ async function registerUserController(req, res) {
  */
 async function loginUserController(req, res) {
 
-    const { email, password } = req.body
+    const { email, password } = req.body || {}
 
-    if (!email || !password) {
+    if (typeof email !== 'string' || !email || email.length > 254 ||
+        typeof password !== 'string' || !password || password.length > 1024) {
         return res.status(400).json({
             message: "Please provide email and password"
         })
