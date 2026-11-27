@@ -27,6 +27,9 @@ test("register, login, profile and logout against isolated MongoDB", async () =>
     })
     const user = { username: "test-user", email: "test@example.test", password: "Test-password-123" }
     assert.equal((await fetch(url + "/health")).status, 200)
+    assert.equal((await post("/auth/register", { ...user, password: "short" })).status, 400)
+    assert.equal((await post("/auth/register", { ...user, email: "not-an-email" })).status, 400)
+    assert.equal((await post("/auth/login", { email: user.email, password: 123 })).status, 400)
     const registered = await post("/auth/register", user)
     assert.equal(registered.status, 201)
     assert.equal((await registered.json()).user.email, user.email)
